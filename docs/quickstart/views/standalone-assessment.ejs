@@ -1,23 +1,80 @@
 <!DOCTYPE html>
 <html>
+
 <head lang="en">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learnosity SDK - NodeJS</title>
     <script src="//items.learnosity.com/?v2022.2.LTS"></script>
 </head>
+
 <body>
     <h1>Standalone Assessment Example</h1>
-<div id="learnosity_assess"></div>
-<script>
-    const request = <%- JSON.stringify(request) %>;
-    const itemsApp = LearnosityItems.init(request, {
-        readyListener() {
-            console.log('ready');
-        },
-        errorListener(err) {
-            console.log('error', err);
+    <div id="learnosity_assess"></div>
+    <script>
+        const request = <%- JSON.stringify(request) %>;
+        const itemsApp = LearnosityItems.init(request, {
+            readyListener() {
+                console.log('ready');
+            },
+            errorListener(err) {
+                console.log('error', err);
+            }
+        })
+
+        // Register events callback --------------------------------------------
+
+        const submitEvent = "test:submit:success";
+        itemsApp.on(submitEvent, function (itemIndex) {
+            window.parent.postMessage(submitEvent, '*');
+
+            if (window.ManabieChannel != undefined) {
+                window.ManabieChannel.postMessage(submitEvent);
+            }
+        });
+
+        const gotToEvent = 'item:goto';
+        itemsApp.on(gotToEvent, function (itemIndex) {
+            window.parent.postMessage(gotToEvent, '*');
+            console.log(window.parent);
+
+            if (window.ManabieChannel != undefined) {
+                window.ManabieChannel.postMessage(gotToEvent);
+            }
+
+            saveAssessmentProgress();
+        });
+
+        // Save progress functions
+        const saveSettings = {
+            success: function (response_ids) {
+                // Receives a list of the saved session responses as [response_id]
+                console.log("save has been successful", response_ids);
+            },
+            error: function (e) {
+                // Receives the event object defined in the Event section
+                console.log("save has failed", e);
+            },
+            progress: function (e) {
+                // Client custom progress event handler
+                // e: uses the progress object defined bellow
+                // See the Progress Event section for more information on this
+                console.log("progress", e);
+            }
+        };
+
+
+        const saveAssessmentProgress = () => {
+            itemsApp.save(saveSettings);
         }
-    })
-</script>
+
+        window.addEventListener("message", (message) => {
+            if (message.data === 'saveAssessmentProgress') {
+                saveAssessmentProgress();
+            }
+        });
+
+    </script>
 </body>
+
 </html>
