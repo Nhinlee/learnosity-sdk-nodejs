@@ -5,14 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learnosity SDK - NodeJS</title>
-    <script src="//items.learnosity.com/?v2022.2.LTS"></script>
+    <script src="//items.learnosity.com/?v2023.1.LTS"></script>
 </head>
 
 <body>
-    <h1>Standalone Assessment Example</h1>
     <div id="learnosity_assess"></div>
     <script>
         const request = <%- JSON.stringify(request) %>;
+        console.log(request);
+        // const request = {"security":{"consumer_key":"yis0TYCu7U9V4o7M","domain":"localhost","timestamp":"20230413-1122","user_id":"469e6ec3-2dd9-4b1d-ae7e-d6ee045e3d98","signature":"b426e02dee98256f8630e789bd299fb74bebb437cb9f2e579896e2d63ab22af7"},"request":{"user_id":"469e6ec3-2dd9-4b1d-ae7e-d6ee045e3d98","activity_template_id":"quickstart_examples_activity_template_001","session_id":"a8e64218-d4bc-4ff9-bbef-385ad0950a8b","activity_id":"quickstart","rendering_type":"assess","type":"submit_practice","name":"Items API Quickstart","state":"initial","meta":{"sdk":{"version":"v0.5.0","lang":"node.js","lang_version":"v19.8.1","platform":"darwin","platform_version":"22.2.0"}}}};
+
+
         const itemsApp = LearnosityItems.init(request, {
             readyListener() {
                 console.log('ready');
@@ -21,29 +24,6 @@
                 console.log('error', err);
             }
         })
-
-        // Register events callback --------------------------------------------
-
-        const submitEvent = "test:submit:success";
-        itemsApp.on(submitEvent, function (itemIndex) {
-            window.parent.postMessage(submitEvent, '*');
-
-            if (window.ManabieChannel != undefined) {
-                window.ManabieChannel.postMessage(submitEvent);
-            }
-        });
-
-        const gotToEvent = 'item:goto';
-        itemsApp.on(gotToEvent, function (itemIndex) {
-            window.parent.postMessage(gotToEvent, '*');
-            console.log(window.parent);
-
-            if (window.ManabieChannel != undefined) {
-                window.ManabieChannel.postMessage(gotToEvent);
-            }
-
-            saveAssessmentProgress();
-        });
 
         // Save progress functions
         const saveSettings = {
@@ -63,14 +43,60 @@
             }
         };
 
-
-        const saveAssessmentProgress = () => {
+        const saveAssessmentProgress = async () => {
             itemsApp.save(saveSettings);
         }
 
-        window.addEventListener("message", (message) => {
-            if (message.data === 'saveAssessmentProgress') {
-                saveAssessmentProgress();
+        const closeAssessment = async () => {
+            itemsApp.save({
+                success: function (response_ids) {
+                    console.log("save has been successful", response_ids);
+                    postMessageToApp("closeAssessment");
+                },
+                error: function (e) {
+                    console.log("save has failed", e);
+                },
+                progress: function (e) {
+                    console.log("progress", e);
+                }
+            });
+        }
+
+        // Register events callback --------------------------------------------
+
+        const postMessageToApp = (message) => {
+            window.parent.postMessage(message, '*');
+
+            if (window.ManabieChannel != undefined) {
+                window.ManabieChannel.postMessage(message);
+            }
+        }
+
+
+        const submitEvent = "test:submit:success";
+        itemsApp.on(submitEvent, function (itemIndex) {
+            postMessageToApp(submitEvent);
+        });
+
+        const gotToEvent = 'item:goto';
+        itemsApp.on(gotToEvent, function (itemIndex) {
+            postMessageToApp(gotToEvent);
+            saveAssessmentProgress();
+        });
+
+        // Register post message
+        window.parent.addEventListener("message", async (message) => {
+            console.log(message.data);
+            switch (message.data) {
+                case 'saveAssessmentProgress':
+                    await saveAssessmentProgress();
+                    break;
+                case 'closeAssessment':
+                    await closeAssessment();
+                    break;
+            
+                default:
+                    break;
             }
         });
 

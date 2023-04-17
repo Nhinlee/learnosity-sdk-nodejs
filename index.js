@@ -58,6 +58,9 @@ function addTelemetryData(requestObject) {
  * @param secret
  */
 function insertSecurityInformationToAssessObject(requestPacket, securityPacket, secret) {
+    console.log(requestPacket);
+    console.log(requestPacket.questionsApiActivity);
+
     if (requestPacket.questionsApiActivity) {
         const questionsApi = requestPacket.questionsApiActivity;
         let domain = 'assess.learnosity.com';
@@ -108,6 +111,7 @@ function generateSignature(
     }
     signatureArray.push(secret);
 
+    // author, reports, items, data
     // Add the requestPacket if necessary
     const signRequestData = !(service === 'assess' || service === 'questions');
 

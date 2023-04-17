@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learnosity SDK - NodeJS</title>
+    <script src="//items.learnosity.com/?v2022.2.LTS"></script>
+</head>
+
+<body>
+    <h1>Standalone Assessment Example</h1>
+    <div id="learnosity_assess"></div>
+    <script>
+        const request = {"security":{"consumer_key":"yis0TYCu7U9V4o7M","domain":"localhost","timestamp":"20230328-0455","user_id":"469e6ec3-2dd9-4b1d-ae7e-d6ee045e3d98","signature":"58bd71797a5680f04bf5cff000d53ef8529f9aced7022460eb09d7b3cca00344"},"request":{"user_id":"469e6ec3-2dd9-4b1d-ae7e-d6ee045e3d98","activity_template_id":"quickstart_examples_activity_template_001","session_id":"40b7f9c3-e079-4884-9b63-f19fa2ebcb9f","activity_id":"quickstart_examples_activity_001","rendering_type":"assess","type":"submit_practice","name":"Items API Quickstart","state":"initial","meta":{"sdk":{"version":"v0.5.0","lang":"node.js","lang_version":"v19.8.1","platform":"darwin","platform_version":"22.2.0"}}}};
+        const itemsApp = LearnosityItems.init(request, {
+            readyListener() {
+                console.log('ready');
+            },
+            errorListener(err) {
+                console.log('error', err);
+            }
+        })
+
+        // Register events callback --------------------------------------------
+
+        const submitEvent = "test:submit:success";
+        itemsApp.on(submitEvent, function (itemIndex) {
+            window.parent.postMessage(submitEvent, '*');
+
+            if (window.ManabieChannel != undefined) {
+                window.ManabieChannel.postMessage(submitEvent);
+            }
+        });
+
+        const gotToEvent = 'item:goto';
+        itemsApp.on(gotToEvent, function (itemIndex) {
+            window.parent.postMessage(gotToEvent, '*');
+            console.log(window.parent);
+
+            if (window.ManabieChannel != undefined) {
+                window.ManabieChannel.postMessage(gotToEvent);
+            }
+
+            saveAssessmentProgress();
+        });
+
+        // Save progress functions
+        const saveSettings = {
+            success: function (response_ids) {
+                // Receives a list of the saved session responses as [response_id]
+                console.log("save has been successful", response_ids);
+            },
+            error: function (e) {
+                // Receives the event object defined in the Event section
+                console.log("save has failed", e);
+            },
+            progress: function (e) {
+                // Client custom progress event handler
+                // e: uses the progress object defined bellow
+                // See the Progress Event section for more information on this
+                console.log("progress", e);
+            }
+        };
+
+
+        const saveAssessmentProgress = () => {
+            itemsApp.save(saveSettings);
+        }
+
+        window.addEventListener("message", (message) => {
+            if (message.data === 'saveAssessmentProgress') {
+                saveAssessmentProgress();
+            }
+        });
+
+    </script>
+</body>
+
+</html>
+

@@ -17,7 +17,7 @@ app.set('view engine', 'ejs');       // Set EJS as our templating language
 
 // Generate the user ID and session ID as UUIDs, set the web server domain.
 const user_id = '469e6ec3-2dd9-4b1d-ae7e-d6ee045e3d98';
-const session_id = '40b7f9c3-e079-4884-9b63-f19fa2ebcb9f';
+const session_id = 'a8e64218-d4bc-4ff9-bbef-385ad0950a8b';
 const domain = 'localhost';
 
 app.get('/', function (req, res) {
@@ -52,6 +52,11 @@ app.get('/', function (req, res) {
         }
     );
 
+    // console.log(req.query);
+    // let signedRequestStr = req.query["signed_request"];
+    // let request = JSON.parse(signedRequestStr);
+    // console.log(request);
+    
     res.render('standalone-assessment', { request }); // Render the page and request.
 });
 
