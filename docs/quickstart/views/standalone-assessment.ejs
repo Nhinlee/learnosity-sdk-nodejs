@@ -24,6 +24,9 @@
                     // Disable the question when it is validated
                     question.on("validated", function(){
                         question.disable();
+                        const responseObject = question.getResponse();
+                        console.log(responseObject);
+                        itemsApp.save(saveSettings);
                     })
 
                     // Check if the question has been answered
@@ -97,7 +100,6 @@
         const gotToEvent = 'item:goto';
         itemsApp.on(gotToEvent, function (itemIndex) {
             postMessageToApp(gotToEvent);
-            saveAssessmentProgress();
         });
 
         // Register post message

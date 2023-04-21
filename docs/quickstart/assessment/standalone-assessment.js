@@ -17,7 +17,7 @@ app.set('view engine', 'ejs');       // Set EJS as our templating language
 
 // Generate the user ID and session ID as UUIDs, set the web server domain.
 const user_id = '469e6ec3-2dd9-4b1d-ae7e-d6ee045e3d98';
-const session_id = '9b72c892-9c1f-439a-8670-71f208949383';
+const session_id = '0d25ac5b-4c89-4042-825a-a3e54f33b692';
 const domain = 'localhost';
 
 app.get('/', function (req, res) {
